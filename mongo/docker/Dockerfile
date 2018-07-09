@@ -21,7 +21,7 @@ RUN mkdir /docker-entrypoint-initdb.d
 
 # Install MongoDB
 RUN echo -e "[mongodb-org]\nname=MongoDB Repository\nbaseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/${MONGO_MAJOR_VERSION}/x86_64/\ngpgcheck=0\nenabled=1" > /etc/yum.repos.d/mongodb.repo
-
+RUN yum install -y yum-plugin-ovl
 RUN yum install -y mongodb-org-${MONGO_FULL_VERSION} && \
     yum clean all
 
