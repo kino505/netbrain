@@ -36,9 +36,3 @@ MONGO_REPLICA_SET_MEMBERS="172.31.84.215:27017 172.31.94.193:27017 172.31.93.156
 MONGO_ADMIN_USERNAME="admin"       # Username for first MongoDB administrator user.
 MONGO_ADMIN_PASSWORD="supersecret" # Password for first MongoDB administrator user.
 
-## License agent use LicenseAgentUseSsl: 0/1
-## if LicenseAgentUseSsl=1: have to create files/ssl directory and put sslCertDile and sslKeyFile into.
-## if LicenseAgentUseSsl=0: will disabled support SSL for License Agent
-LicenseAgentUseSsl=1
-LicenseSslCertFile=cert.pem
-LicenseSslKeyFile=key.pem

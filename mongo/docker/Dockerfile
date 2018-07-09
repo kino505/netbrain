@@ -35,8 +35,8 @@ VOLUME /data/db /data/configdb
 
 # Install License Agent
 
-COPY key.pem /etc/ssl/license_agent.key
-COPY cert.pem /etc/ssl/license_agent.crt
+#COPY key.pem /etc/ssl/license_agent.key
+#COPY cert.pem /etc/ssl/license_agent.crt
 #
 RUN yum install e2fsprogs cron lsof -y
 
@@ -46,10 +46,13 @@ COPY License.tar /etc/netbrain
 
 RUN cd /etc/netbrain && tar xfv License.tar
 
-RUN cd /etc/netbrain/License && ./install.sh
+#CentOS 7: no systemd for Docker allowed.
+RUN cd /etc/netbrain/License && \
+     sed -i "s/\(UseSSL=\).*/\10/" /etc/netbrain/License/install_licenseagent.conf && \
+    ./install.sh && \
+    /sbin/chkconfig --del netbrainlicense
 
-RUN su netbrain -c "/usr/bin/netbrainlicense/licensed -f /usr/licensed/licensed.conf"
-
+#RUN su netbrain -c "/usr/bin/netbrainlicense/licensed -f /usr/licensed/licensed.conf"
 
 #######
 

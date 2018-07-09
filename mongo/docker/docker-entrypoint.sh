@@ -18,7 +18,11 @@ if [[ "$originalArgOne" == mongo* ]] && [ "$(id -u)" = '0' ]; then
 	# (for our "initdb" code later; see "--logpath" below)
 	chown --dereference mongodb "/proc/$$/fd/1" "/proc/$$/fd/2" || :
 	# ignore errors thanks to https://github.com/docker-library/mongo/issues/149
-
+        #if [ ! $(getent passwd netbrain) ]; then
+	# echo "Install and setup Netbraint License Agent"
+	# cd /etc/netbrain/License
+	# ./install.sh
+	#fi
         su netbrain -c "/usr/bin/netbrainlicense/licensed -f /usr/licensed/licensed.conf"
 
 	exec gosu mongodb "$BASH_SOURCE" "$@"

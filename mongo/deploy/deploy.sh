@@ -115,33 +115,38 @@ if [[ "${DOCKER_EXIST}" == "no" ]]; then
    docker create --name="mongodb_${MONGO_NODE_NAME}" --hostname="mongodb_${MONGO_NODE_NAME}" --publish=${MONGO_EXT_PORT}:27017 --publish=27654:27654 --memory=${CONTAINER_MEMORY} --cpu-period=${CONTAINER_CPU_PERIOD} --cpu-quota=${CONTAINER_CPU_QUOTA} --volume=${MONGO_CONFIG_DIR}:/data/configdb --volume=${MONGO_DATA_DIR}:/data/db nb-mongo:latest mongod --replSet ${MONGO_REPLICA_SET_NAME} ${SSL_START} --bind_ip_all
 fi
 
-if [ ${LicenseAgentUseSsl} == "1" ]; then
- if [ -f "files/ssl/${LicenseSslCertFile}" ] && [ -f "files/ssl/${LicenseSslKeyFile}" ]; then
-  echo "Coping client LicenseAgent SSL certificates inside Docker container"
-  echo "files/ssl/${LicenseSslCertFile} to /etc/ssl/license_agent.crt"
-  docker cp files/ssl/${LicenseSslCertFile} mongodb_${MONGO_NODE_NAME}:/etc/ssl/license_agent.crt
-  echo "files/ssl/${LicenseSslKeyFile} to /etc/ssl/license_agent.key"
-  docker cp files/ssl/${LicenseSslKeyFile} mongodb_${MONGO_NODE_NAME}:/etc/ssl/license_agent.key
-  echo "Start LicenseAgent with SSL support"
-  docker start mongodb_${MONGO_NODE_NAME}
+if [ $MONGO_USE_SSL == "yes" ]; then
+ echo "Start LicenseAgent with SSL support. Preparing..."
+ if [ -f ${SSL_KEY_FILE} ]; then
+     echo "Copy ${SSL_KEY_FILE} SSL key file to using as License Agent key file"
+     docker cp ${SSL_KEY_FILE} mongodb_${MONGO_NODE_NAME}:/etc/ssl/license_agent.key
  else
-  echo
-  echo "WARNING! LicenseAgentUseSsl is 1, but don't exists SSl LicenseAgent certs. Please create a directory ssl and put key/cert files and restart again."
-  echo "No files: files/ssl/: ${LicenseSslCertFile} and ${LicenseSslKeyFile}"
-  echo "Failed status! Removing the prepared docker container"
-  docker rm mongodb_${MONGO_NODE_NAME}
-  exit 1
+     echo "${SSL_KEY_FILE} is not exist"
+     docker rm mongodb_${MONGO_NODE_NAME}
+     exit 1
  fi
-else
- echo "Start LicenseAgent without SSL support"
+
+ if [ -f ${SSL_CERT_FILE} ]; then
+     echo "Copy ${SSL_CERT_FILE} SSL certificate to using as License Agent cert file"
+     docker cp ${SSL_CERT_FILE} mongodb_${MONGO_NODE_NAME}:/etc/ssl/license_agent.crt
+ else
+     echo "${SSL_CERT_FILE} is not exist"
+     docker rm mongodb_${MONGO_NODE_NAME}
+     exit 1
+ fi
+
+ echo "Start LicenseAgent with SSL support"
  docker cp mongodb_${MONGO_NODE_NAME}:/usr/licensed/licensed.conf .
- sed -i "s/\(ssl=\).*/\10/" licensed.conf
- sed -i "s/^\(sslCertFile=.*\)/#\1/" licensed.conf
- sed -i "s/^\(sslKeyFile=.*\)/#\1/" licensed.conf
+ sed -i "s/\(ssl=\).*/\11/" licensed.conf
+ sed -i "s/^.*\(sslCertFile=\)\(.*\)/\1\/etc\/ssl\/license_agent.crt/" licensed.conf
+ sed -i "s/^.*\(sslKeyFile=\)\(.*\)/\1\/etc\/ssl\/license_agent.key/" licensed.conf
  docker cp licensed.conf mongodb_${MONGO_NODE_NAME}:/usr/licensed/
  rm -f licensed.conf
- docker start mongodb_${MONGO_NODE_NAME}
+else
+ echo "Start LicenseAgent without SSL support"
 fi
+
+docker start mongodb_${MONGO_NODE_NAME}
 
 sleep 10
 echo "Check mongodb docker status"

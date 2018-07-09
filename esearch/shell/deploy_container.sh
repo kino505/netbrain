@@ -13,7 +13,7 @@ echo "Load variables from the file config.sh"
 source ./config.sh
 
 echo "Load Docker image from archive"
-#docker load --input="./files/nb-esearch.tar"
+docker load --input="./files/nb-esearch.tar"
 
 #We are going to access RW to DATA/LOG dir for username elasticsearch (UID=1000)
 # check exist uid=1000 and creating if not exists
