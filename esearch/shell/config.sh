@@ -31,13 +31,13 @@ ESEARCH_LOG_DIR="${HOME}/esearch/${ESEARCH_NODENAME}/log"      # Host directory 
 
 #If YES: we are going to use ssl artifacts from config/ssl/client/* and will set searchguard.ssl.http.enabled: true
 #if NO: we are going to use ssl artifacts from config/ssl/default/* and will set searchguard.ssl.http.enabled: false
-SG_USE_SSL="yes" # yes/no
-#SG_USE_SSL="no" # yes/no
+#SG_USE_SSL="yes" # yes/no
+SG_USE_SSL="no" # yes/no
 
 #If SG_USE_SSL=no than we are going to copy ssl artifacts from config/ssl/default/* as bellow strings described. 
-SG_SSL_KEY_FILE="key.pem"
-SG_SSL_CERT_FILE="cert.pem"
-SG_SSL_CA_CERT_FILE="ca.pem"
+SG_SSL_KEY_FILE="/etc/ssl/key.pem"
+SG_SSL_CERT_FILE="/etc/ssl/cert.pem"
+SG_SSL_CA_CERT_FILE="/etc/ssl/ca.pem"
 #SG_SSL_KEY_PWD="netbrain"
 SG_SSL_KEY_PWD=""
 

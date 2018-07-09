@@ -13,7 +13,7 @@ echo "Load variables from the file config.sh"
 source ./config.sh
 
 echo "Load Docker image from archive"
-docker load --input="./files/nb-esearch.tar"
+#docker load --input="./files/nb-esearch.tar"
 
 #We are going to access RW to DATA/LOG dir for username elasticsearch (UID=1000)
 # check exist uid=1000 and creating if not exists
@@ -57,9 +57,12 @@ fi
 
 if [ ${SG_USE_SSL} == "yes" ]; then
  SSL_STAGE="ssl/client/"
- SSL_KEY_FILE=${SG_SSL_KEY_FILE}
- SSL_CERT_FILE=${SG_SSL_CERT_FILE}
- SSL_CA_CERT_FILE=${SG_SSL_CA_CERT_FILE}
+ SSL_KEY_FILE="key.pem"
+ SSL_CERT_FILE="cert.pem"
+ SSL_CA_CERT_FILE="ca.pem"
+ #SSL_KEY_FILE=${SG_SSL_KEY_FILE}
+ #SSL_CERT_FILE=${SG_SSL_CERT_FILE}
+ #SSL_CA_CERT_FILE=${SG_SSL_CA_CERT_FILE}
  SSL_KEY_PWD=${SG_SSL_KEY_PWD}
  #Whether to enable TLS on the REST layer or not. If enabled, only HTTPS is allowed. (Optional)
  SSL_HTTP="true"
@@ -108,17 +111,17 @@ docker create --name="esearch_${ESEARCH_NODENAME}" \
        nb-esearch:latest
 
 if [ ${SG_USE_SSL} == "yes" ]; then
-# [ -f "${SSL_STAGE}${SSL_KEY_FILE}" ] && docker cp ${SSL_STAGE}${SSL_KEY_FILE} esearch_${ESEARCH_NODENAME}:/usr/share/elasticsearch/config/ssl/client/
-# [ -f "${SSL_STAGE}${SSL_CERT_FILE}" ] && docker cp ${SSL_STAGE}${SSL_CERT_FILE} esearch_${ESEARCH_NODENAME}:/usr/share/elasticsearch/config/ssl/client/
-# [ -f "${SSL_STAGE}${SSL_CA_CERT_FILE}" ] && docker cp ${SSL_STAGE}${SSL_CA_CERT_FILE} esearch_${ESEARCH_NODENAME}:/usr/share/elasticsearch/config/ssl/client/
+ echo "Copying KEY file ${SG_SSL_KEY_FILE} to ${SSL_STAGE}${SSL_KEY_FILE}"
+ echo "Copying CERT file ${SG_SSL_CERT_FILE} to ${SSL_STAGE}${SSL_CERT_FILE}"
+ echo "Copying CA CERT file ${SG_SSL_CA_CERT_FILE} to ${SSL_STAGE}${SSL_CA_CERT_FILE}"
  if [ -f "${SSL_STAGE}${SSL_KEY_FILE}" ] && [ -f "${SSL_STAGE}${SSL_CERT_FILE}" ] && [ -f "${SSL_STAGE}${SSL_CA_CERT_FILE}" ]; then
   echo "Coping client SSL certificates inside Docker container"
-  echo ${SSL_STAGE}${SSL_KEY_FILE}
-  docker cp ${SSL_STAGE}${SSL_KEY_FILE} esearch_${ESEARCH_NODENAME}:/usr/share/elasticsearch/config/ssl/client/
-  echo ${SSL_STAGE}${SSL_CERT_FILE}
-  docker cp ${SSL_STAGE}${SSL_CERT_FILE} esearch_${ESEARCH_NODENAME}:/usr/share/elasticsearch/config/ssl/client/
-  echo ${SSL_STAGE}${SSL_CA_CERT_FILE}
-  docker cp ${SSL_STAGE}${SSL_CA_CERT_FILE} esearch_${ESEARCH_NODENAME}:/usr/share/elasticsearch/config/ssl/client/
+  docker cp ${SSL_STAGE}${SSL_KEY_FILE} esearch_${ESEARCH_NODENAME}:/usr/share/elasticsearch/config/ssl/client/key.pem
+  docker cp ${SSL_STAGE}${SSL_CERT_FILE} esearch_${ESEARCH_NODENAME}:/usr/share/elasticsearch/config/ssl/client/cert.pem
+  docker cp ${SSL_STAGE}${SSL_CA_CERT_FILE} esearch_${ESEARCH_NODENAME}:/usr/share/elasticsearch/config/ssl/client/ca.pem
+  #docker cp ${SSL_STAGE}${SSL_KEY_FILE} esearch_${ESEARCH_NODENAME}:${SSL_STAGE}${SSL_KEY_FILE}
+  #docker cp ${SSL_STAGE}${SSL_CERT_FILE} esearch_${ESEARCH_NODENAME}:${SSL_STAGE}${SSL_CERT_FILE}
+  #docker cp ${SSL_STAGE}${SSL_CA_CERT_FILE} esearch_${ESEARCH_NODENAME}:${SSL_STAGE}${SSL_CA_CERT_FILE}
   echo "Start with Client SSL Certs"
   docker start esearch_${ESEARCH_NODENAME}
  else
